@@ -88,6 +88,30 @@ tfoot td.n{text-align:right}
 .bar button:hover{border-color:var(--ink)}
 .saved{align-self:center;font-size:12px;color:var(--recv);opacity:0;transition:opacity .25s;margin-left:auto}
 .saved.on{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(31,41,55,.55);display:none;z-index:50;
+ align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.sheet{background:var(--card);border-radius:14px;width:100%;max-width:560px;max-height:86vh;
+ display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.28)}
+.shead{background:var(--ink);color:#fff;padding:13px 16px;display:flex;justify-content:space-between;align-items:center}
+.shead b{font-size:15px;letter-spacing:.3px}
+.shead button{background:transparent;border:0;color:#d1d5db;font-size:24px;line-height:1;cursor:pointer;padding:0 2px}
+.tabs{display:flex;gap:6px;padding:10px 12px 0}
+.tabs button{flex:1;font-family:inherit;font-size:13px;padding:8px;border:1px solid var(--line);
+ background:#fff;border-radius:8px;cursor:pointer;color:var(--mute)}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.sbody{overflow-y:auto;padding:12px}
+.srow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.srow:last-child{border:0}
+.srow .lb{width:96px;flex:none;font-size:11.5px;font-weight:700;line-height:1.25}
+.srow .lb i{display:block;font-style:normal;font-weight:400;font-size:9.5px;color:var(--mute)}
+.srow .track{flex:1;height:20px;background:var(--light);border-radius:5px;overflow:hidden;position:relative}
+.srow .fillb{display:block;height:100%;min-width:3px;border-radius:5px;background:var(--give)}
+.srow .fillb.pos{background:var(--recv)}
+.srow .vl{width:78px;flex:none;text-align:right;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.srow.peak .lb{color:var(--give)}
+.sfoot{font-size:11px;color:var(--mute);padding:10px 4px 2px;display:flex;justify-content:space-between;gap:8px}
+.sempty{padding:22px;text-align:center;color:var(--grey);font-size:13px}
 .foot{font-size:11px;color:var(--grey);font-style:italic;margin-top:14px}
 .empty{padding:22px 10px;text-align:center;color:var(--grey);font-size:13px}
 
@@ -187,12 +211,18 @@ tfoot td.n{text-align:right}
 
  <div class="bar">
   <button class="add" id="add">+ Add row</button>
+  <button id="sum">Summary</button>
   <button id="exp">Export backup</button>
   <button id="impBtn">Import backup</button>
   <input type="file" id="imp" accept=".json" hidden>
   <button id="clr">Clear all</button>
   <span class="saved" id="saved">Saved</span>
  </div>
+ <div class="modal" id="modal"><div class="sheet">
+  <div class="shead"><b>Summary</b><button id="close">×</button></div>
+  <div class="tabs"><button class="on" data-mode="weeks">By week</button><button data-mode="months">By month</button></div>
+  <div class="sbody" id="sbody"></div>
+ </div></div>
  <div class="foot">Tap the date cell to pick a date. Type the amount in whichever column it belongs to — leave the others blank.</div>
 </main>
 
@@ -369,6 +399,59 @@ fRange.addEventListener('change',function(){filt.range=this.value;save();render(
 fFrom.addEventListener('change',function(){filt.from=this.value;save();render();});
 fTo.addEventListener('change',function(){filt.to=this.value;save();render();});
 
+var sumMode='weeks';
+function bucketTotals(from,to){
+ var f=0,g=0,r=0;
+ rows.forEach(function(x){
+  if(!x.date||x.date<from||x.date>to)return;
+  f+=num(x.fuel);g+=num(x.given);r+=num(x.recv);
+ });
+ return {fuel:f,given:g,recv:r,net:(f+g)-r};
+}
+function buildSummary(){
+ var items=[];
+ if(sumMode==='weeks'){
+  weeksOf(filt.month).forEach(function(w,i){
+   var t=bucketTotals(w.from,w.to);
+   items.push({name:'Week '+(i+1),sub:w.label.split('(')[1].replace(')',''),t:t});
+  });
+ }else{
+  var set={};rows.forEach(function(x){if(x.date)set[x.date.slice(0,7)]=1;});
+  set[filt.month]=1;
+  Object.keys(set).sort().forEach(function(m){
+   var y=+m.slice(0,4),mm=+m.slice(5,7)-1;
+   var t=bucketTotals(iso(new Date(y,mm,1)),iso(new Date(y,mm+1,0)));
+   items.push({name:MON[mm]+' '+y,sub:'',t:t});
+  });
+ }
+ var max=0,tot=0,peak=null;
+ items.forEach(function(o){max=Math.max(max,Math.abs(o.t.net));tot+=o.t.net;
+  if(!peak||o.t.net>peak.t.net)peak=o;});
+ var live=items.filter(function(o){return o.t.fuel||o.t.given||o.t.recv;});
+ if(!live.length){sbody.innerHTML='<div class="sempty">Nothing logged yet.</div>';return;}
+ sbody.innerHTML=items.map(function(o){
+  var w=max?Math.round(Math.abs(o.t.net)/max*100):0;
+  var isPeak=(peak&&o===peak&&o.t.net>0);
+  return '<div class="srow'+(isPeak?' peak':'')+'">'
+   +'<span class="lb">'+o.name+(o.sub?'<i>'+o.sub+'</i>':'')+'</span>'
+   +'<span class="track"><span class="fillb'+(o.t.net<0?' pos':'')+'" style="width:'+w+'%"></span></span>'
+   +'<span class="vl" style="color:'+(o.t.net>0?'var(--give)':(o.t.net<0?'var(--recv)':'var(--mute)'))+'">'+signed(o.t.net)+'</span>'
+  +'</div>';
+ }).join('')
+ +'<div class="sfoot"><span>'+(peak&&peak.t.net>0?'Highest: '+peak.name+'  ('+signed(peak.t.net)+')':'')+'</span>'
+ +'<span>Total '+signed(tot)+'</span></div>';
+}
+function openSummary(){modal.className='modal on';buildSummary();}
+document.getElementById('sum').addEventListener('click',openSummary);
+document.getElementById('close').addEventListener('click',function(){modal.className='modal';});
+modal.addEventListener('click',function(e){if(e.target===modal)modal.className='modal';});
+document.querySelectorAll('.tabs button').forEach(function(b){
+ b.addEventListener('click',function(){
+  sumMode=b.dataset.mode;
+  document.querySelectorAll('.tabs button').forEach(function(x){x.className=(x===b?'on':'');});
+  buildSummary();
+ });
+});
 document.getElementById('exp').addEventListener('click',function(){
  var a=document.createElement('a');
  a.href='data:application/json,'+encodeURIComponent(JSON.stringify({rows:rows,filt:filt}));
