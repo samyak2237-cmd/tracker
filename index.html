@@ -65,6 +65,12 @@ td.f input{color:var(--fuel);font-weight:600}
 td.r input{color:var(--recv);font-weight:600}
 td.g input{color:var(--give);font-weight:600}
 td.sum{display:none}
+.sv i{font-style:normal;display:inline-block;font-size:11.5px;font-weight:700;padding:2px 7px;
+ border-radius:20px;margin:2px 4px 0 0;line-height:1.35}
+.sv .cf{background:#fdf0e2;color:#b96a24}
+.sv .cr{background:#e2f4f1;color:#1f7a6c}
+.sv .cg{background:#fdeae7;color:#c0523f}
+.sv .cn{background:var(--light);color:var(--mute);font-weight:400}
 td.x{width:34px;text-align:center}
 td.x .ok{display:none;color:var(--recv);font-size:16px;font-weight:700}
 td.x button{border:0;background:transparent;color:var(--grey);font-size:18px;cursor:pointer;padding:6px}
@@ -106,7 +112,7 @@ tfoot td.n{text-align:right}
  tbody tr.collapsed td{display:none}
  tbody tr.collapsed td.sum{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:11px 46px 11px 12px;cursor:pointer}
  tbody tr.collapsed td.sum .sd{font-size:12.5px;font-weight:700}
- tbody tr.collapsed td.sum .sv{font-size:12px;color:var(--mute)}
+ tbody tr.collapsed td.sum .sv{display:flex;flex-wrap:wrap}
  tbody tr.collapsed td.x{display:block;top:50%;transform:translateY(-50%)}
  tbody tr.collapsed td.x .ok{display:none}
  tbody tr td.d{padding-right:92px}
@@ -207,6 +213,10 @@ function money(n){
  if(rest)l3=rest.replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+l3;
  return (neg?'-₹':'₹')+l3+(q[1]?'.'+q[1]:'');
 }
+function signed(n){
+ if(!n)return '₹0';
+ return (n>0?'-':'+')+money(Math.abs(n));
+}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
 function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function parse(s){var d=new Date(s+'T00:00:00');return isNaN(d)?null:d;}
@@ -269,12 +279,12 @@ function fmt(s){var d=parse(s);return d?(d.getDate()+' '+MON[d.getMonth()]+' '+d
 
 function summary(r){
  var b=[];
- if(num(r.fuel))b.push('Fuel '+money(num(r.fuel)));
- if(num(r.recv))b.push('Recv '+money(num(r.recv)));
- if(num(r.given))b.push('Given '+money(num(r.given)));
- var t=b.join('  ·  ');
- if(r.note)t+=(t?'  ·  ':'')+r.note;
- return t||'empty';
+ if(num(r.fuel))b.push('<i class="cf">Fuel '+money(num(r.fuel))+'</i>');
+ if(num(r.recv))b.push('<i class="cr">+'+money(num(r.recv))+'</i>');
+ if(num(r.given))b.push('<i class="cg">Given '+money(num(r.given))+'</i>');
+ var t=b.join('');
+ if(r.note)t+='<i class="cn">'+esc(r.note)+'</i>';
+ return t||'<i class="cn">empty</i>';
 }
 function render(){
  buildFilters();
@@ -289,9 +299,9 @@ function render(){
  var netv=(f+g)-rc;
 
  tFuel.textContent=money(f);tGive.textContent=money(g);tRecv.textContent=money(rc);
- net.textContent=money(netv);
+ net.textContent=signed(netv);net.style.color=netv>0?'#ffb4a2':(netv<0?'#7ee787':'#fff');
  sF.textContent=money(f);sR.textContent=money(rc);sG.textContent=money(g);
- sN.textContent='Net '+money(netv);
+ sN.innerHTML='Net&nbsp;<span style="color:'+(netv>0?'var(--give)':(netv<0?'var(--recv)':'var(--ink)'))+'">'+signed(netv)+'</span>';
  sub.textContent=view.length+' entr'+(view.length===1?'y':'ies')+(w?'  ·  '+fmt(w.from)+' – '+fmt(w.to):'  ·  all time');
 
  empty.style.display=view.length?'none':'block';
@@ -315,8 +325,8 @@ function totalsOnly(){
  rows.forEach(function(r){if(!inWindow(r,w))return;f+=num(r.fuel);g+=num(r.given);rc+=num(r.recv);});
  var n=(f+g)-rc;
  tFuel.textContent=money(f);tGive.textContent=money(g);tRecv.textContent=money(rc);
- net.textContent=money(n);sF.textContent=money(f);sR.textContent=money(rc);sG.textContent=money(g);
- sN.textContent='Net '+money(n);
+ net.textContent=signed(n);net.style.color=n>0?'#ffb4a2':(n<0?'#7ee787':'#fff');sF.textContent=money(f);sR.textContent=money(rc);sG.textContent=money(g);
+ sN.innerHTML='Net&nbsp;<span style="color:'+(n>0?'var(--give)':(n<0?'var(--recv)':'var(--ink)'))+'">'+signed(n)+'</span>';
 }
 
 document.getElementById('rows').addEventListener('input',function(e){
