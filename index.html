@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Fuel &amp; Carpool Ledger</title>
+<meta name="theme-color" content="#1f2937">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fuel">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%231F2937'/><rect x='150' y='150' width='150' height='230' rx='16' fill='none' stroke='%23F4A261' stroke-width='26'/><path d='M150 210h150' stroke='%23F4A261' stroke-width='26'/><path d='M300 240h34a22 22 0 0 1 22 22v72a22 22 0 0 0 22 22 22 22 0 0 0 22-22V200l-44-44' fill='none' stroke='%232A9D8F' stroke-width='24' stroke-linecap='round'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%231F2937'/><rect x='150' y='150' width='150' height='230' rx='16' fill='none' stroke='%23F4A261' stroke-width='26'/><path d='M150 210h150' stroke='%23F4A261' stroke-width='26'/><path d='M300 240h34a22 22 0 0 1 22 22v72a22 22 0 0 0 22 22 22 22 0 0 0 22-22V200l-44-44' fill='none' stroke='%232A9D8F' stroke-width='24' stroke-linecap='round'/></svg>">
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Fuel%20%26%20Carpool%22%2C%22short_name%22%3A%22Fuel%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8f7f4%22%2C%22theme_color%22%3A%22%231f2937%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22110%22%20fill%3D%22%25231F2937%22%2F%3E%3Crect%20x%3D%22150%22%20y%3D%22150%22%20width%3D%22150%22%20height%3D%22230%22%20rx%3D%2216%22%20fill%3D%22none%22%20stroke%3D%22%2523F4A261%22%20stroke-width%3D%2226%22%2F%3E%3Cpath%20d%3D%22M150%20210h150%22%20stroke%3D%22%2523F4A261%22%20stroke-width%3D%2226%22%2F%3E%3Cpath%20d%3D%22M300%20240h34a22%2022%200%200%201%2022%2022v72a22%2022%200%200%200%2022%2022%2022%2022%200%200%200%2022-22V200l-44-44%22%20fill%3D%22none%22%20stroke%3D%22%25232A9D8F%22%20stroke-width%3D%2224%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
 <style>
 :root{
  --ink:#1f2937;--paper:#f8f7f4;--card:#fff;--light:#f3f4f6;--line:#e5e7eb;
@@ -73,11 +80,42 @@ tfoot td.n{text-align:right}
 .foot{font-size:11px;color:var(--grey);font-style:italic;margin-top:14px}
 .empty{padding:22px 10px;text-align:center;color:var(--grey);font-size:13px}
 
+
+@media(max-width:620px){
+ .scroll{overflow-x:visible}
+ table,thead,tbody,tfoot,tr,td{display:block;width:auto}
+ table{min-width:0}
+ thead{display:none}
+ tbody tr{border-bottom:8px solid var(--paper);padding:4px 0 6px;position:relative;background:#fff}
+ tbody tr:nth-child(even) td{background:transparent}
+ tbody td{border:0;display:flex;align-items:center;gap:10px;padding:0 10px}
+ tbody td::before{content:attr(data-l);flex:none;width:86px;font-size:10.5px;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--mute);font-weight:700}
+ tbody td input{flex:1;height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;
+  background:#fff;text-align:left;min-width:0}
+ tbody td.n input{text-align:right;font-size:16px}
+ tbody td.d input{min-width:0;font-size:14px}
+ tbody td.x{position:absolute;top:6px;right:6px;width:auto;padding:0}
+ tbody td.x::before{content:none}
+ tbody td.x button{font-size:20px;padding:4px 8px}
+ tbody tr td:first-child{padding-right:44px}
+ tfoot tr{background:var(--light);border-radius:10px;padding:8px 4px;display:block}
+ tfoot td{background:transparent;display:flex;justify-content:space-between;padding:5px 12px;border:0;font-size:14px}
+ tfoot td::before{content:attr(data-l);color:var(--mute);font-weight:700;font-size:10.5px;letter-spacing:.4px;text-transform:uppercase}
+ tfoot td:first-child{display:none}
+ tfoot td#sN{border-top:1px solid var(--line);margin-top:4px;padding-top:9px;justify-content:flex-end;font-size:16px}
+ .cards{grid-template-columns:repeat(3,1fr);gap:7px}
+ .card{padding:8px 9px;border-top-width:3px}
+ .card small{font-size:9.5px;min-height:24px}
+ .card b{font-size:15px;margin-top:2px}
+ .bar button{flex:1;min-width:calc(50% - 4px)}
+ .bar button.add{min-width:100%}
+ .saved{margin:0 auto}
+}
 @media(max-width:820px){header{padding:20px 18px 16px}main{padding:16px 16px 48px}}
 @media(max-width:560px){
  header{padding:16px 14px}main{padding:12px 10px 40px}
  h1{font-size:20px}.bignet b{font-size:24px}
- .cards{grid-template-columns:1fr 1fr}
  thead th{font-size:8.5px;padding:8px 5px}
  td input{font-size:13px;padding:10px 5px}
  td.d input{min-width:124px;font-size:12px}
@@ -118,7 +156,7 @@ tfoot td.n{text-align:right}
    <tbody id="rows"></tbody>
    <tfoot><tr>
     <td style="padding-left:12px">TOTAL</td>
-    <td class="n" id="sF">0</td><td class="n" id="sR">0</td><td class="n" id="sG">0</td>
+    <td class="n" id="sF" data-l="Fuel">0</td><td class="n" id="sR" data-l="Received">0</td><td class="n" id="sG" data-l="Given">0</td>
     <td colspan="2" style="padding-left:12px" id="sN"></td>
    </tr></tfoot>
   </table>
@@ -239,11 +277,11 @@ function render(){
  document.getElementById('rows').innerHTML=view.map(function(o){
   var r=o.r,i=o.i;
   return '<tr>'
-   +'<td class="d"><input type="date" data-i="'+i+'" data-k="date" value="'+esc(r.date)+'"></td>'
-   +'<td class="n f"><input inputmode="decimal" data-i="'+i+'" data-k="fuel" placeholder="—" value="'+esc(r.fuel)+'"></td>'
-   +'<td class="n r"><input inputmode="decimal" data-i="'+i+'" data-k="recv" placeholder="—" value="'+esc(r.recv)+'"></td>'
-   +'<td class="n g"><input inputmode="decimal" data-i="'+i+'" data-k="given" placeholder="—" value="'+esc(r.given)+'"></td>'
-   +'<td><input data-i="'+i+'" data-k="note" value="'+esc(r.note)+'"></td>'
+   +'<td class="d" data-l="Date"><input type="date" data-i="'+i+'" data-k="date" value="'+esc(r.date)+'"></td>'
+   +'<td class="n f" data-l="Fuel on car"><input inputmode="decimal" data-i="'+i+'" data-k="fuel" placeholder="—" value="'+esc(r.fuel)+'"></td>'
+   +'<td class="n r" data-l="Received"><input inputmode="decimal" data-i="'+i+'" data-k="recv" placeholder="—" value="'+esc(r.recv)+'"></td>'
+   +'<td class="n g" data-l="Given"><input inputmode="decimal" data-i="'+i+'" data-k="given" placeholder="—" value="'+esc(r.given)+'"></td>'
+   +'<td class="nt" data-l="Note"><input data-i="'+i+'" data-k="note" value="'+esc(r.note)+'"></td>'
    +'<td class="x"><button data-del="'+i+'" aria-label="Delete row">×</button></td>'
   +'</tr>';
  }).join('');
