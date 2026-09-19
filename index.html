@@ -23,7 +23,7 @@ html,body{margin:0;background:var(--paper);color:var(--ink);
 body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 
 header{background:var(--ink);color:#fff;padding:24px 32px 20px}
-.hwrap{max-width:1100px;margin:0 auto}
+.hwrap{max-width:780px;margin:0 auto}
 .hrow{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
 h1{margin:0;font-size:28px;letter-spacing:-.5px}
 h1 em{font-style:normal;font-size:11px;letter-spacing:1px;color:var(--fuel);margin-left:10px;font-weight:700}
@@ -32,7 +32,7 @@ h1 em{font-style:normal;font-size:11px;letter-spacing:1px;color:var(--fuel);marg
 .bignet b{display:block;font-size:36px;line-height:1;font-variant-numeric:tabular-nums}
 .bignet small{font-size:9px;letter-spacing:1px;color:#d1d5db}
 
-main{max-width:1100px;margin:0 auto;padding:20px 32px 60px}
+main{max-width:780px;margin:0 auto;padding:20px 20px 60px}
 
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-top:3px solid var(--c)}
@@ -116,7 +116,7 @@ tfoot td.n{text-align:right}
 .empty{padding:22px 10px;text-align:center;color:var(--grey);font-size:13px}
 
 
-@media(max-width:620px){
+@media all{
  .scroll{overflow-x:visible}
  table,thead,tbody,tfoot,tr,td{display:block;width:auto}
  table{min-width:0}
@@ -153,6 +153,8 @@ tfoot td.n{text-align:right}
  .card{padding:8px 9px;border-top-width:3px}
  .card small{font-size:9.5px;min-height:24px}
  .card b{font-size:15px;margin-top:2px}
+}
+@media(max-width:620px){
  .bar button{flex:1;min-width:calc(50% - 4px)}
  .bar button.add{min-width:100%}
  .saved{margin:0 auto}
