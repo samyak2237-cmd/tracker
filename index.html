@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fuel &amp; Carpool Ledger</title>
+<style>
+:root{
+ --ink:#1f2937;--paper:#f8f7f4;--card:#fff;--light:#f3f4f6;--line:#e5e7eb;
+ --grey:#9ca3af;--mute:#6b7280;
+ --fuel:#F4A261;--recv:#2A9D8F;--give:#E76F51;--net:#457B9D;--red:#ef4444;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--paper);color:var(--ink);
+ font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif}
+body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+header{background:var(--ink);color:#fff;padding:24px 32px 20px}
+.hwrap{max-width:1100px;margin:0 auto}
+.hrow{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:28px;letter-spacing:-.5px}
+h1 em{font-style:normal;font-size:11px;letter-spacing:1px;color:var(--fuel);margin-left:10px;font-weight:700}
+.sub{color:#d1d5db;font-size:12px;margin-top:5px}
+.bignet{text-align:right}
+.bignet b{display:block;font-size:36px;line-height:1;font-variant-numeric:tabular-nums}
+.bignet small{font-size:9px;letter-spacing:1px;color:#d1d5db}
+
+main{max-width:1100px;margin:0 auto;padding:20px 32px 60px}
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;border-top:3px solid var(--c)}
+.card small{font-size:11px;color:var(--mute);display:block;line-height:1.3;min-height:26px}
+.card b{display:block;font-size:22px;margin-top:4px;color:var(--c);font-variant-numeric:tabular-nums}
+
+.filters{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:14px;
+ display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters label{font-size:10px;color:var(--mute);display:block;margin-bottom:3px}
+.fg{flex:1;min-width:120px}
+select,input{font-family:inherit;font-size:15px;width:100%;background:#fff;color:var(--ink);
+ border:1px solid var(--line);border-radius:8px;padding:8px 9px;outline:0}
+select:focus,input:focus{border-color:var(--net)}
+.range{display:none;gap:8px;width:100%}
+.range.on{display:flex}
+.hint{font-size:11px;color:var(--mute);width:100%}
+
+.tbl{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:620px;border-collapse:collapse}
+th,td{border-bottom:1px solid var(--line);padding:0;text-align:left}
+thead th{background:var(--ink);color:#fff;font-size:10px;letter-spacing:.7px;padding:11px 12px;font-weight:700;white-space:nowrap}
+thead th.n{text-align:right}
+tbody tr:nth-child(even) td{background:#fbfbfa}
+td input{border:0;background:transparent;border-radius:0;padding:12px;font-size:15px;height:46px}
+td.n input{text-align:right;font-variant-numeric:tabular-nums}
+td input:focus{background:#fffbf3;box-shadow:inset 0 0 0 2px var(--net)}
+td.d input{font-size:13px;font-weight:600;min-width:128px}
+td.f input{color:var(--fuel);font-weight:600}
+td.r input{color:var(--recv);font-weight:600}
+td.g input{color:var(--give);font-weight:600}
+td.x{width:34px;text-align:center}
+td.x button{border:0;background:transparent;color:var(--grey);font-size:18px;cursor:pointer;padding:6px}
+td.x button:hover{color:var(--red)}
+tfoot td{background:var(--light);font-weight:700;font-size:14px;padding:12px;font-variant-numeric:tabular-nums}
+tfoot td.n{text-align:right}
+
+.bar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.bar button{font-family:inherit;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:8px;
+ padding:9px 14px;cursor:pointer;color:var(--ink)}
+.bar button.add{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.bar button:hover{border-color:var(--ink)}
+.saved{align-self:center;font-size:12px;color:var(--recv);opacity:0;transition:opacity .25s;margin-left:auto}
+.saved.on{opacity:1}
+.foot{font-size:11px;color:var(--grey);font-style:italic;margin-top:14px}
+.empty{padding:22px 10px;text-align:center;color:var(--grey);font-size:13px}
+
+@media(max-width:820px){header{padding:20px 18px 16px}main{padding:16px 16px 48px}}
+@media(max-width:560px){
+ header{padding:16px 14px}main{padding:12px 10px 40px}
+ h1{font-size:20px}.bignet b{font-size:24px}
+ .cards{grid-template-columns:1fr 1fr}
+ thead th{font-size:8.5px;padding:8px 5px}
+ td input{font-size:13px;padding:10px 5px}
+ td.d input{min-width:124px;font-size:12px}
+}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+ <div class="hrow">
+  <div><h1>FUEL<em>&amp; CARPOOL</em></h1><div class="sub" id="sub"></div></div>
+  <div class="bignet"><b id="net">₹0</b><small>NET OUT-OF-POCKET</small></div>
+ </div>
+</div></header>
+
+<main>
+ <div class="cards">
+  <div class="card" style="--c:var(--fuel)"><small>Total fuel on my car</small><b id="tFuel">₹0</b></div>
+  <div class="card" style="--c:var(--give)"><small>Total I gave to friends</small><b id="tGive">₹0</b></div>
+  <div class="card" style="--c:var(--recv)"><small>Total friends gave me</small><b id="tRecv">₹0</b></div>
+ </div>
+
+ <div class="filters">
+  <div class="fg"><label for="fMonth">Month</label><select id="fMonth"></select></div>
+  <div class="fg"><label for="fRange">Range</label><select id="fRange"></select></div>
+  <div class="range" id="custom">
+   <div class="fg"><label for="fFrom">From</label><input type="date" id="fFrom"></div>
+   <div class="fg"><label for="fTo">To</label><input type="date" id="fTo"></div>
+  </div>
+  <div class="hint" id="hint"></div>
+ </div>
+
+ <div class="tbl">
+  <div class="scroll">
+  <table>
+   <thead><tr>
+    <th>DATE</th><th class="n">FUEL ON CAR</th><th class="n">RECEIVED</th><th class="n">GIVEN</th><th>NOTE</th><th></th>
+   </tr></thead>
+   <tbody id="rows"></tbody>
+   <tfoot><tr>
+    <td style="padding-left:12px">TOTAL</td>
+    <td class="n" id="sF">0</td><td class="n" id="sR">0</td><td class="n" id="sG">0</td>
+    <td colspan="2" style="padding-left:12px" id="sN"></td>
+   </tr></tfoot>
+  </table>
+  </div>
+  <div class="empty" id="empty">No entries in this range.</div>
+ </div>
+
+ <div class="bar">
+  <button class="add" id="add">+ Add row</button>
+  <button id="exp">Export backup</button>
+  <button id="impBtn">Import backup</button>
+  <input type="file" id="imp" accept=".json" hidden>
+  <button id="clr">Clear all</button>
+  <span class="saved" id="saved">Saved</span>
+ </div>
+ <div class="foot">Tap the date cell to pick a date. Type the amount in whichever column it belongs to — leave the others blank.</div>
+</main>
+
+<script>
+(function(){
+var KEY='fuelLedger.v1';
+var rows=[], filt={month:'', range:'month', from:'', to:''};
+
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);
+ if(Array.isArray(p))rows=p; else if(p&&Array.isArray(p.rows)){rows=p.rows;filt=Object.assign(filt,p.filt||{});}}}catch(e){}
+var savedT=null;
+function flash(){var el=document.getElementById('saved');if(!el)return;el.className='saved on';
+ clearTimeout(savedT);savedT=setTimeout(function(){el.className='saved';},1100);}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({rows:rows,filt:filt}));flash();}catch(e){}}
+
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function num(v){var n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0;}
+function money(n){
+ var neg=n<0,v=Math.abs(n),s=(Math.round(v*100)/100).toFixed(2).replace(/\.00$/,'');
+ var q=s.split('.'),i=q[0],l3=i.slice(-3),rest=i.slice(0,-3);
+ if(rest)l3=rest.replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+l3;
+ return (neg?'-₹':'₹')+l3+(q[1]?'.'+q[1]:'');
+}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parse(s){var d=new Date(s+'T00:00:00');return isNaN(d)?null:d;}
+
+function weeksOf(ym){
+ if(!ym)return[];
+ var y=+ym.slice(0,4),m=+ym.slice(5,7)-1;
+ var first=new Date(y,m,1),last=new Date(y,m+1,0);
+ var cur=new Date(first);cur.setDate(cur.getDate()-((cur.getDay()+6)%7));
+ var out=[];
+ while(cur<=last){
+  var s=new Date(cur),e=new Date(cur);e.setDate(e.getDate()+6);
+  out.push({from:iso(s),to:iso(e),
+   label:'Week '+(out.length+1)+'  ('+s.getDate()+' '+MON[s.getMonth()]+' – '+e.getDate()+' '+MON[e.getMonth()]+')'});
+  cur.setDate(cur.getDate()+7);
+ }
+ return out;
+}
+function monthsInData(){
+ var set={};rows.forEach(function(r){if(r.date)set[r.date.slice(0,7)]=1;});
+ set[iso(new Date()).slice(0,7)]=1;
+ if(filt.month)set[filt.month]=1;
+ return Object.keys(set).sort().reverse();
+}
+function activeWindow(){
+ if(filt.range==='all')return null;
+ if(filt.range==='month'){
+  if(!filt.month)return null;
+  var y=+filt.month.slice(0,4),m=+filt.month.slice(5,7)-1;
+  return {from:iso(new Date(y,m,1)),to:iso(new Date(y,m+1,0))};
+ }
+ if(filt.range==='custom')return (filt.from&&filt.to)?{from:filt.from,to:filt.to}:null;
+ var w=weeksOf(filt.month)[+filt.range.slice(1)];
+ return w?{from:w.from,to:w.to}:null;
+}
+function inWindow(r,w){
+ if(!w)return true;
+ if(!r.date)return false;
+ return r.date>=w.from&&r.date<=w.to;
+}
+
+function buildFilters(){
+ var ms=monthsInData();
+ if(!filt.month)filt.month=ms[0];
+ fMonth.innerHTML=ms.map(function(m){
+  return '<option value="'+m+'"'+(m===filt.month?' selected':'')+'>'+MON[+m.slice(5,7)-1]+' '+m.slice(0,4)+'</option>';}).join('');
+ var ws=weeksOf(filt.month);
+ var opts='<option value="all">All time</option><option value="month">Whole month</option>';
+ opts+=ws.map(function(w,i){return '<option value="w'+i+'">'+w.label+'</option>';}).join('');
+ opts+='<option value="custom">Custom range</option>';
+ fRange.innerHTML=opts;
+ if(!fRange.querySelector('[value="'+filt.range+'"]'))filt.range='month';
+ fRange.value=filt.range;
+ custom.className='range'+(filt.range==='custom'?' on':'');
+ fFrom.value=filt.from;fTo.value=filt.to;
+ var w=activeWindow();
+ hint.textContent=w?('Showing '+fmt(w.from)+'  –  '+fmt(w.to)):'Showing every entry.';
+}
+function fmt(s){var d=parse(s);return d?(d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear()):s;}
+
+function render(){
+ buildFilters();
+ var w=activeWindow();
+ var view=rows.map(function(r,i){return {r:r,i:i};}).filter(function(o){return inWindow(o.r,w);});
+ view.sort(function(a,b){
+  var x=a.r.date||'9999',y=b.r.date||'9999';
+  return x===y?a.i-b.i:(x<y?-1:1);
+ });
+ var f=0,g=0,rc=0;
+ view.forEach(function(o){f+=num(o.r.fuel);g+=num(o.r.given);rc+=num(o.r.recv);});
+ var netv=(f+g)-rc;
+
+ tFuel.textContent=money(f);tGive.textContent=money(g);tRecv.textContent=money(rc);
+ net.textContent=money(netv);
+ sF.textContent=money(f);sR.textContent=money(rc);sG.textContent=money(g);
+ sN.textContent='Net '+money(netv);
+ sub.textContent=view.length+' entr'+(view.length===1?'y':'ies')+(w?'  ·  '+fmt(w.from)+' – '+fmt(w.to):'  ·  all time');
+
+ empty.style.display=view.length?'none':'block';
+ document.getElementById('rows').innerHTML=view.map(function(o){
+  var r=o.r,i=o.i;
+  return '<tr>'
+   +'<td class="d"><input type="date" data-i="'+i+'" data-k="date" value="'+esc(r.date)+'"></td>'
+   +'<td class="n f"><input inputmode="decimal" data-i="'+i+'" data-k="fuel" placeholder="—" value="'+esc(r.fuel)+'"></td>'
+   +'<td class="n r"><input inputmode="decimal" data-i="'+i+'" data-k="recv" placeholder="—" value="'+esc(r.recv)+'"></td>'
+   +'<td class="n g"><input inputmode="decimal" data-i="'+i+'" data-k="given" placeholder="—" value="'+esc(r.given)+'"></td>'
+   +'<td><input data-i="'+i+'" data-k="note" value="'+esc(r.note)+'"></td>'
+   +'<td class="x"><button data-del="'+i+'" aria-label="Delete row">×</button></td>'
+  +'</tr>';
+ }).join('');
+}
+
+function totalsOnly(){
+ var w=activeWindow(),f=0,g=0,rc=0;
+ rows.forEach(function(r){if(!inWindow(r,w))return;f+=num(r.fuel);g+=num(r.given);rc+=num(r.recv);});
+ var n=(f+g)-rc;
+ tFuel.textContent=money(f);tGive.textContent=money(g);tRecv.textContent=money(rc);
+ net.textContent=money(n);sF.textContent=money(f);sR.textContent=money(rc);sG.textContent=money(g);
+ sN.textContent='Net '+money(n);
+}
+
+document.getElementById('rows').addEventListener('input',function(e){
+ var el=e.target;if(!el.dataset.k)return;
+ var r=rows[+el.dataset.i];if(!r)return;
+ r[el.dataset.k]=el.value;save();
+ if(el.dataset.k==='date'){render();}else{totalsOnly();}
+});
+document.getElementById('rows').addEventListener('click',function(e){
+ var b=e.target.closest('[data-del]');if(!b)return;
+ var i=+b.dataset.del,r=rows[i];if(!r)return;
+ var bits=[];
+ if(num(r.fuel))bits.push('fuel '+money(num(r.fuel)));
+ if(num(r.recv))bits.push('received '+money(num(r.recv)));
+ if(num(r.given))bits.push('given '+money(num(r.given)));
+ var what=(r.date?fmt(r.date):'this row')+(bits.length?'  —  '+bits.join(', '):'')+(r.note?'  ('+r.note+')':'');
+ if(!confirm('Delete this entry?\n\n'+what))return;
+ rows.splice(i,1);save();render();
+});
+
+document.getElementById('add').addEventListener('click',function(){
+ var w=activeWindow();
+ var today=iso(new Date());
+ var d=w?((today>=w.from&&today<=w.to)?today:w.from):today;
+ rows.push({date:d,fuel:'',recv:'',given:'',note:''});save();render();
+ var inp=document.querySelectorAll('#rows tr:last-child input');if(inp[1])inp[1].focus();
+});
+fMonth.addEventListener('change',function(){filt.month=this.value;save();render();});
+fRange.addEventListener('change',function(){filt.range=this.value;save();render();});
+fFrom.addEventListener('change',function(){filt.from=this.value;save();render();});
+fTo.addEventListener('change',function(){filt.to=this.value;save();render();});
+
+document.getElementById('exp').addEventListener('click',function(){
+ var a=document.createElement('a');
+ a.href='data:application/json,'+encodeURIComponent(JSON.stringify({rows:rows,filt:filt}));
+ a.download='fuel-ledger-'+iso(new Date())+'.json';a.click();
+});
+document.getElementById('impBtn').addEventListener('click',function(){imp.click();});
+imp.addEventListener('change',function(){
+ var f=this.files[0];if(!f)return;var rd=new FileReader();
+ rd.onload=function(){try{var p=JSON.parse(rd.result);
+  rows=Array.isArray(p)?p:(p.rows||[]);filt=Object.assign(filt,(p&&p.filt)||{});save();render();
+ }catch(e){alert('Not a valid backup file');}};
+ rd.readAsText(f);this.value='';
+});
+document.getElementById('clr').addEventListener('click',function(){
+ if(!rows.length)return;
+ if(confirm('Delete all '+rows.length+' rows?')){rows=[];save();render();}
+});
+
+if(!rows.length)rows.push({date:iso(new Date()),fuel:'',recv:'',given:'',note:''});
+render();
+})();
+</script>
+</body>
+</html>
