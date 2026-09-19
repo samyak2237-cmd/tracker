@@ -65,6 +65,9 @@ td.f input{color:var(--fuel);font-weight:600}
 td.r input{color:var(--recv);font-weight:600}
 td.g input{color:var(--give);font-weight:600}
 td.sum{display:none}
+.sd u{text-decoration:none;font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+ color:var(--mute);background:var(--light);border-radius:5px;padding:2px 5px;margin-left:7px;vertical-align:1px}
+.sd u.sun{color:var(--red);background:#fdeae7}
 .sv i{font-style:normal;display:inline-block;font-size:11.5px;font-weight:700;padding:2px 7px;
  border-radius:20px;margin:2px 4px 0 0;line-height:1.35}
 .sv .cf{background:#fdf0e2;color:#b96a24}
@@ -276,6 +279,8 @@ function buildFilters(){
  hint.textContent=w?('Showing '+fmt(w.from)+'  –  '+fmt(w.to)):'Showing every entry.';
 }
 function fmt(s){var d=parse(s);return d?(d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear()):s;}
+var DAY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function dow(s){var d=parse(s);return d?DAY[d.getDay()]:'';}
 
 function summary(r){
  var b=[];
@@ -309,8 +314,8 @@ function render(){
   var r=o.r,i=o.i;
   var open=!r.done;
   return '<tr class="'+(open?'':'collapsed')+'">'
-   +'<td class="sum" data-i="'+i+'"><span class="sd">'+(r.date?fmt(r.date):'No date')+'</span><span class="sv">'+summary(r)+'</span></td>'
-   +'<td class="d" data-l="Date"><input type="date" data-i="'+i+'" data-k="date" value="'+esc(r.date)+'"></td>'
+   +'<td class="sum" data-i="'+i+'"><span class="sd">'+(r.date?fmt(r.date):'No date')+(r.date?'<u class="'+(dow(r.date)==='Sun'?'sun':'')+'">'+dow(r.date)+'</u>':'')+'</span><span class="sv">'+summary(r)+'</span></td>'
+   +'<td class="d" data-l="'+(r.date?('Date · '+dow(r.date)):'Date')+'"><input type="date" data-i="'+i+'" data-k="date" value="'+esc(r.date)+'"></td>'
    +'<td class="n f" data-l="Fuel on car"><input inputmode="decimal" data-i="'+i+'" data-k="fuel" placeholder="—" value="'+esc(r.fuel)+'"></td>'
    +'<td class="n r" data-l="Received"><input inputmode="decimal" data-i="'+i+'" data-k="recv" placeholder="—" value="'+esc(r.recv)+'"></td>'
    +'<td class="n g" data-l="Given"><input inputmode="decimal" data-i="'+i+'" data-k="given" placeholder="—" value="'+esc(r.given)+'"></td>'
